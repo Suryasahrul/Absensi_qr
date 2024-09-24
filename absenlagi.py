@@ -36,27 +36,33 @@ def validate_attendance(time):
     else:
         return "Terlambat"
 
-# Membaca QR code menggunakan kamera
-def read_qr_code():
+# Membaca QR code menggunakan kamera secara berkelanjutan
+def continuous_qr_scan():
     cap = cv2.VideoCapture(0)
     detector = cv2.QRCodeDetector()
-    
+
+    st.write("Menunggu scan QR code... Tekan 'q' di jendela kamera untuk berhenti.")
+
     while True:
-        _, img = cap.read()
+        ret, img = cap.read()
+
+        if not ret:
+            st.error("Gagal mengambil gambar dari kamera. Pastikan kamera berfungsi dengan baik.")
+            break
+
         data, _, _ = detector.detectAndDecode(img)
-        
+
         if data:
-            cap.release()
-            cv2.destroyAllWindows()
-            return data
-        
+            st.write(f"QR code terdeteksi: {data}")
+            yield data
+
         cv2.imshow("QR Code Scanner", img)
-        if cv2.waitKey(1) == ord("q"):
+
+        if cv2.waitKey(1) == ord("q"):  # Tekan 'q' untuk keluar
             break
 
     cap.release()
     cv2.destroyAllWindows()
-    return None
 
 # Aplikasi Streamlit
 st.title("Sistem Absensi Siswa dengan QR Code")
@@ -77,12 +83,12 @@ if st.button("Generate QR Code"):
 # Membaca QR code dan mencatat kehadiran
 st.header("Scan Kehadiran Siswa")
 
-if st.button("Scan QR Code"):
-    scanned_nis = read_qr_code()
+if st.button("Mulai Scan QR Code"):
+    scanned_data = continuous_qr_scan()
 
-    if scanned_nis:
+    for scanned_nis in scanned_data:
         # Dapatkan waktu dan tanggal saat ini
-        current_time = datetime.now().strftime("%H:%M:%S")  # Format string langsung
+        current_time = datetime.now().strftime("%H:%M:%S")
         current_date = datetime.today().strftime("%Y-%m-%d")
         status = validate_attendance(datetime.strptime(current_time, "%H:%M:%S").time())
 
@@ -96,13 +102,13 @@ if st.button("Scan QR Code"):
             if nama and kelas:  # Pastikan data Nama dan Kelas terisi
                 # Buat DataFrame untuk data baru
                 new_data = {
-                    "Nama": nama, 
-                    "NIS": scanned_nis,  # NIS tetap sebagai string
-                    "Kelas": kelas,  # Tambahkan data kelas
-                    "Waktu Kehadiran": current_time, 
+                    "Nama": nama,
+                    "NIS": scanned_nis,
+                    "Kelas": kelas,
+                    "Waktu Kehadiran": current_time,
                     "Status": status
                 }
-                new_data_df = pd.DataFrame([new_data])  # Buat DataFrame dari new_data
+                new_data_df = pd.DataFrame([new_data])
 
                 # Gabungkan data lama dengan data baru
                 df = pd.concat([df, new_data_df], ignore_index=True)
@@ -111,34 +117,33 @@ if st.button("Scan QR Code"):
                 st.success(f"Kehadiran tercatat untuk NIS: {scanned_nis} ({status})")
             else:
                 st.error("Nama dan kelas tidak boleh kosong!")
-    else:
-        st.warning("Tidak ada QR code yang terdeteksi!")
 
-def read_qr_code():
-    cap = cv2.VideoCapture(0)  # Buka kamera
+# Membaca QR code menggunakan kamera secara berkelanjutan dengan DirectShow sebagai backend
+def continuous_qr_scan():
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Menggunakan backend DirectShow
     detector = cv2.QRCodeDetector()
 
-    st.write("Menunggu scan QR code. Tekan 'q' di jendela kamera untuk berhenti.")
+    st.write("Menunggu scan QR code... Tekan 'q' di jendela kamera untuk berhenti.")
 
     while True:
-        ret, img = cap.read()  # ret akan True jika gambar berhasil diambil
+        ret, img = cap.read()
 
-        if not ret:  # Jika gambar tidak berhasil diambil
+        if not ret:
             st.error("Gagal mengambil gambar dari kamera. Pastikan kamera berfungsi dengan baik.")
             break
 
         data, _, _ = detector.detectAndDecode(img)
 
-        if data:  # Jika data QR code ditemukan
+        if data:
             st.write(f"QR code terdeteksi: {data}")
-            yield data  # Menggunakan 'yield' untuk mengembalikan data secara berkelanjutan
+            yield data
 
         cv2.imshow("QR Code Scanner", img)
 
         if cv2.waitKey(1) == ord("q"):  # Tekan 'q' untuk keluar
             break
 
-    cap.release()  # Tutup kamera
+    cap.release()
     cv2.destroyAllWindows()
 
 

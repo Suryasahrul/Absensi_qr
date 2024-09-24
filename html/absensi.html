@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Absensi Siswa dengan QR Code</title>
+    <link rel="stylesheet" href="stylesheet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Sistem Absensi Siswa dengan QR Code</h1>
+
+        <!-- Form Tambah Data Siswa -->
+        <h2>Tambah Data Siswa</h2>
+        <form id="student-form">
+            <label for="name">Nama Siswa</label>
+            <input type="text" id="name" placeholder="Masukkan Nama Siswa">
+
+            <label for="nisn">NISN</label>
+            <input type="text" id="nisn" placeholder="Masukkan NISN">
+
+            <label for="class">Kelas</label>
+            <input type="text" id="class" placeholder="Masukkan Kelas">
+
+            <button type="button" onclick="generateQRCode()">Generate QR Code</button>
+        </form>
+
+        <div class="qr-code">
+            <img id="qr-image" src="" alt="QR Code" class="qr-preview">
+        </div>
+
+        <!-- Section Scan QR Code -->
+        <h2>Scan QR Code</h2>
+        <video id="video" autoplay class="video-preview"></video>
+        <div id="qr-result" class="alert success">QR Code Detected: <span id="qr-content"></span></div>
+
+        <!-- Data Kehadiran -->
+        <h2>Data Kehadiran Siswa</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>NIS</th>
+                    <th>Kelas</th>
+                    <th>Tanggal Kehadiran</th>
+                    <th>Waktu Kehadiran</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="attendance-data">
+                <!-- Data absensi akan ditampilkan di sini -->
+            </tbody>
+        </table>
+
+        <!-- Tombol Unduh Data Kehadiran -->
+        <button class="download-btn" onclick="downloadExcel()">Download Data Kehadiran (Excel)</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
